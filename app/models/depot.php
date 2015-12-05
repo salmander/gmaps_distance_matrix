@@ -17,7 +17,7 @@ class Depot extends \Illuminate\Database\Eloquent\Model {
       `longitude` varchar(45) DEFAULT NULL,
       `latitude` varchar(45) DEFAULT NULL,
       PRIMARY KEY (`id`)
-    ) ENGINE=InnoDB AUTO_INCREMENT=122 DEFAULT CHARSET=latin1;
+    ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
     */
 
     public static function getDepotPostcodes($delimiter = '|')
