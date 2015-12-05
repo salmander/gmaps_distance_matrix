@@ -5,6 +5,14 @@ namespace DB;
 class Customer extends \Illuminate\Database\Eloquent\Model {
 
     /**
+    * Remove spaces from postcode
+    */
+    public function getPostcodeAttribute($value)
+    {
+        return str_replace(' ', '', $value);
+    }
+
+    /**
     CREATE TABLE `customers` (
       `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
       `title` varchar(11) NOT NULL DEFAULT '',

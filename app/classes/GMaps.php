@@ -13,6 +13,7 @@ class GMaps {
     private $origins;
     private $destinations;
     private $mode;
+    private $response;
 
     public function __construct($guzzle)
     {
@@ -99,7 +100,7 @@ class GMaps {
         if ($this->destinations == null) {
             return trigger_error('Set origins by calling setDestinations().', E_USER_ERROR);
         }
-        
+
         return $this->destinations;
     }
 
@@ -119,7 +120,7 @@ class GMaps {
             $destinations = $this->getDestinations();
         }
 
-        $response = $this->guzzle->request('GET', $this->getURL(), [
+        $this->response = $this->guzzle->request('GET', $this->getURL(), [
             'query' => [
                 'origins' => $origins,
                 'destinations' => $destinations,
@@ -127,7 +128,12 @@ class GMaps {
         ]);
 
         // Cast body as string
-        return (string)$response->getBody();
+        return (string)$this->response->getBody();
+    }
+
+    public function getDepotDistance()
+    {
+
     }
 
 

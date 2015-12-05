@@ -13,6 +13,8 @@ $depots_postcodes = DB\Depot::getDepotPostcodes();
 
 //echo count(explode('|', $depots_postcodes)); exit;
 
+echo $depots_postcodes . PHP_EOL;
+
 // Get all the customers
 $customers = DB\Customer::where('postcode', '!=', '')->get();
 
@@ -25,6 +27,7 @@ if ($customers) {
 
     // Iterate over each customer
     foreach ($customers as $customer) {
+        //echo 'Calling postcode: "'.$customer->.'"'
         // Call the GMaps API
         $response = $gmaps->getResponse($customer->postcode);
 
