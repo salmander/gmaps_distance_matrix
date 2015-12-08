@@ -5,14 +5,6 @@ namespace DB;
 class Depot extends \Illuminate\Database\Eloquent\Model {
 
     /**
-    * Remove spaces from postcode
-    */
-    public function getPostcodeAttribute($value)
-    {
-        return str_replace(' ', '', $value);
-    }
-
-    /**
      CREATE TABLE `depots` (
       `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
       `depot` varchar(45) DEFAULT NULL,
@@ -31,11 +23,11 @@ class Depot extends \Illuminate\Database\Eloquent\Model {
     public static function getDepotPostcodes($delimiter = '|')
     {
         $postcodes = '';
-
-        foreach (self::limit(100)->get(['postcode'])->toArray() as $p) {
+        $depots = self::orderBy('id')->get(['id', 'depot', 'postcode'])->toArray();
+        foreach ($depots as $p) {
             $postcodes .= $p['postcode'] . $delimiter;
         }
 
-        return $postcodes;
+        return rtrim($postcodes, '|');
     }
 }
