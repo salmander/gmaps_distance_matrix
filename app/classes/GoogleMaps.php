@@ -83,6 +83,17 @@ class GoogleMaps {
         return $this->unit;
     }
 
+    private function getApiKey()
+    {
+        if ($this->api_key == null) {
+            $this->setApiKey();
+
+        }
+
+        return $this->api_key;
+    }
+
+
     public function getURL()
     {
         // url/<distancematrix|geocoding>/<json|xml>/
@@ -99,6 +110,17 @@ class GoogleMaps {
         }
 
         return $this->request_query_parameters;
+    }
+
+    public function constructQuery($query)
+    {
+        // Check if api key is set
+        if ($this->getApiKey()) {
+            // Add api key to the query strings
+            $query['key'] = $this->getApiKey();
+        }
+
+        $this->request_query_parameters = $query;
     }
 
     protected function request()

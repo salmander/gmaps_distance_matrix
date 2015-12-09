@@ -29,10 +29,6 @@ class Geocode extends GoogleMaps implements GoogleMapsApi {
         return $this->address;
     }
 
-    public function constructQuery($query)
-    {
-        $this->request_query_parameters = $query;
-    }
 
     public function makeRequest($address = null)
     {
