@@ -35,7 +35,7 @@ class GMaps {
         ];
 
         $this->mode = 'driving';
-        $this->destinations_limit = 100;
+        $this->destinations_limit = 80;
         $this->string_delimiter = '|';
     }
 
@@ -192,8 +192,18 @@ class GMaps {
                 'query' => $query,
             ]);
 
-            Log::msg('Response received from the server, adding it to the `responses` array.');
+            Log::msg('Response received from the server.');
 
+            // Check if a valid response is received from the server
+            if (!$this->validateResponse($response)) {
+                Log::msg('Invalid response... skipping to next.');
+
+                // Between each request we need to wait for 1/2 a second
+                sleep(0.5);
+                continue;
+            }
+
+            Log::msg('Adding response to the `responses` array.');
             $this->responses[] = $response;
 
             // Between each request we need to wait for 1/2 a second
@@ -203,11 +213,21 @@ class GMaps {
         return $this->getResponseBody();
     }
 
+    public function validateResponse($response)
+    {
+        if ($response_obj = json_decode((string)$response->getBody(), true)) {
+            if (isset($response_obj['status']) && $response_obj['status'] == 'OK') {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public function getResponseBody()
     {
         $body = [];
 
-        //Log::msg( 'responses array: ' . print_r($this->responses, 1));
         if (count($this->responses) > 0) {
             foreach ($this->responses as $response) {
                 $body[] = (string)$response->getBody();
@@ -233,15 +253,13 @@ class GMaps {
         */
         $responses = [];
         if (count($this->responses) < 1) {
-            Log::msg('Invalid responses array');
+            Log::msg('No successful response has been received from the server yet.');
             return [];
         }
 
         foreach ($this->responses as $response) {
             $responses[] = json_decode((string)$response->getBody(), true);
         }
-
-        Log::msg('Responses: ' . print_r($responses, 1));
 
         $addresses = [];
         foreach ($responses as $r) {
@@ -296,8 +314,6 @@ class GMaps {
 
         // Sort the array
         array_multisort($distance, SORT_ASC, $data);
-
-        Log::msg('SORTED: ' . print_r($data, 1));
 
         return $data;
     }

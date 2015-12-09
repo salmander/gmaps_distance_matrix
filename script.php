@@ -35,7 +35,7 @@ if ($customers) {
         // Get nearest depot to the customer
         $nearest_depot = $gmaps->getNearestDestination();
         if ($nearest_depot) {
-            Log::msg('Getting the depot model from the postcode "' . $nearest_depot['destination_postcode'] . '"');
+            Log::msg('Getting the depot model from the database where postcode = "' . $nearest_depot['destination_postcode'] . '"');
 
             // Get the depot id from the depot postcode
             $depot = DB\Depot::where('postcode', '=', $nearest_depot['destination_postcode'])->first();
