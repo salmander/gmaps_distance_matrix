@@ -14,6 +14,7 @@ use App\Helper;
 // Get all the customers
 $customers = DB\Customer::where('postcode', '!=', '')
     ->whereRaw('(depot IS NULL OR depot = 0)')
+    ->limit(1000)
     ->get();
 
 if ($customers) {
@@ -58,6 +59,7 @@ if ($customers) {
         // Sort the distances by shortest distance first
         array_multisort($sort_distance, SORT_ASC, $distances);
 
+        // Update customer.depot and depot_distance
         if ($distances && isset($distances[0])) {
             Log::msg('Updating customer depot to "' . $distances[0]['depot_id'] . '"');
             $customer->depot = $distances[0]['depot_id'];
@@ -68,7 +70,5 @@ if ($customers) {
         }
 
         Log::msg('Continue to the next customer ...', true, 1);
-
-        break;
     }
 }
