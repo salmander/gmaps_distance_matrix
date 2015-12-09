@@ -106,7 +106,7 @@ class GoogleMaps {
     {
         if ($this->request_query_parameters == null) {
             // Throw error
-            return trigger_error('Unknown Request Query Parameters');
+            return trigger_error('Unknown Request Query Parameters', E_USER_ERROR);
         }
 
         return $this->request_query_parameters;
@@ -181,7 +181,7 @@ class GoogleMaps {
 
         $this->log->msg('Nothing in responses array.');
 
-        throw_error('No valid responses', E_USER_ERROR);
+        trigger_error('No valid responses', E_USER_ERROR);
 
         return false;
     }

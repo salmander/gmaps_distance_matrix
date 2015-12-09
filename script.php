@@ -14,7 +14,7 @@ use App\Helper;
 // Get all the customers
 $customers = DB\Customer::where('postcode', '!=', '')
     ->whereRaw('(depot IS NULL OR depot = 0)')
-    ->limit(1000)
+    ->limit(100)
     ->get();
 
 if ($customers) {
@@ -39,6 +39,8 @@ if ($customers) {
         $customer->save();
 
         // Get the customer distance to all depots
+        $distances = [];
+        $sort_distance = [];
         foreach (DB\Depot::all() as $depot) {
             $d = Helper::getDistanceBetweenCordinates(
                 $customer_address['latitude'],
@@ -49,6 +51,8 @@ if ($customers) {
 
             $distances[$depot->id] = [
                 'depot_id' => $depot->id,
+                'depot' => $depot->depot,
+                'depot_postcode' => $depot->postcode,
                 'distance_meters' => $d,
             ];
 
@@ -61,6 +65,8 @@ if ($customers) {
 
         // Update customer.depot and depot_distance
         if ($distances && isset($distances[0])) {
+            Log::msg('Closest three depots to the customer are: ' . print_r(array_slice($distances, 0, 3), 1));
+
             Log::msg('Updating customer depot to "' . $distances[0]['depot_id'] . '"');
             $customer->depot = $distances[0]['depot_id'];
             $customer->depot_distance = $distances[0]['distance_meters'];
@@ -70,5 +76,6 @@ if ($customers) {
         }
 
         Log::msg('Continue to the next customer ...', true, 1);
+        sleep(0.5);
     }
 }
