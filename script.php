@@ -10,6 +10,15 @@ use App\Log;
 * https://maps.googleapis.com/maps/api/distancematrix/json?c=LS157SS&destinations=LS9 7NN|WF1 4PY|HG3 1RZ|BD4 7DG&mode=driving&units=imperial
 */
 
+$geocode = new App\Geocode(new GuzzleHttp\Client, new Log);
+
+$responses = $geocode->makeRequest('LS15 7SS');
+
+print_r($geocode->getAddressInfo());
+
+exit;
+
+
 // Get all the depot postcodes in pipe delimitted string format
 $depot_postcodes = DB\Depot::getDepotPostcodes();
 
