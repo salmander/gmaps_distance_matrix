@@ -44,7 +44,7 @@ class Geocode extends GoogleMaps implements GoogleMapsApi {
 
         // Make API request
         if ($response = $this->request()) {
-            Log::msg('Adding response to the `responses` array.');
+            $this->log->msg('Adding response to the `responses` array.');
             $this->responses[] = $response;
         }
 
