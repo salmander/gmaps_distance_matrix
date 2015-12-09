@@ -14,7 +14,7 @@ use App\Helper;
 // Get all the customers
 $customers = DB\Customer::where('postcode', '!=', '')
     ->whereRaw('(depot IS NULL OR depot = 0)')
-    ->limit(100)
+    ->limit(1000)
     ->get();
 
 if ($customers) {
