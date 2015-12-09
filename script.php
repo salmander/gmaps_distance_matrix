@@ -13,8 +13,6 @@ use App\Log;
 // Get all the depot postcodes in pipe delimitted string format
 $depot_postcodes = DB\Depot::getDepotPostcodes();
 
-Log::msg( $depot_postcodes . PHP_EOL);
-
 // Get all the customers
 $customers = DB\Customer::where('postcode', '!=', '')
     ->whereRaw('(depot IS NULL OR depot = 0)')

@@ -17,6 +17,7 @@ class GMaps {
     private $destinations_limit;
     private $string_delimiter;
     private $log;
+    private $api_key;
 
     public function __construct($guzzle, Log $log)
     {
@@ -71,6 +72,15 @@ class GMaps {
         $this->destinations = $destinations;
     }
 
+    public function setApiKey($key = null)
+    {
+        if ($key != null) {
+            $this->api_key = $key;
+        } else if (defined('GMAPS_API_KEY')) {
+            $this->api_key = GMAPS_API_KEY;
+        }
+    }
+
     public function getType()
     {
         if ($this->type == null) {
@@ -106,6 +116,16 @@ class GMaps {
         }
 
         return $this->origins;
+    }
+
+    private function getApiKey()
+    {
+        if ($this->api_key == null) {
+            $this->setApiKey();
+
+        }
+
+        return $this->api_key;
     }
 
     public function getDestinations($limit = false, $delimiter = '|')
@@ -153,19 +173,31 @@ class GMaps {
 
         foreach ($destinations as $d) {
             // Make API call
-            Log::msg('Making API call for postcodes: ' . $d . PHP_EOL);
+            Log::msg('Constructing query parameters for making GMaps API call');
+
+            $query = [
+                'units' => $this->getUnit(),
+                'origins' => $origins,
+                'destinations' => $d,
+            ];
+
+            // Check if api key is set
+            if ($this->getApiKey()) {
+                // Add api key to the query strings
+                $query['key'] = $this->getApiKey();
+            }
+
+            Log::msg('Query strings for this request: ' . print_r($query, 1));
             $response = $this->guzzle->request('GET', $this->getURL(), [
-                'query' => [
-                    'unit' => $this->getUnit(),
-                    'origins' => $origins,
-                    'destinations' => $d,
-                ]
+                'query' => $query,
             ]);
 
-            Log::msg('Adding response to the `responses` array.' . PHP_EOL);
+            Log::msg('Response received from the server, adding it to the `responses` array.');
 
             $this->responses[] = $response;
-            sleep(1);
+
+            // Between each request we need to wait for 1/2 a second
+            sleep(0.5);
         }
 
         return $this->getResponseBody();
@@ -175,10 +207,11 @@ class GMaps {
     {
         $body = [];
 
-        //Log::msg( 'responses array: ' . print_r($this->responses, 1) . PHP_EOL;
-
-        foreach ($this->responses as $response) {
-            $body[] = (string)$response->getBody();
+        //Log::msg( 'responses array: ' . print_r($this->responses, 1));
+        if (count($this->responses) > 0) {
+            foreach ($this->responses as $response) {
+                $body[] = (string)$response->getBody();
+            }
         }
 
         return $body;
@@ -199,10 +232,16 @@ class GMaps {
         * )
         */
         $responses = [];
+        if (count($this->responses) < 1) {
+            Log::msg('Invalid responses array');
+            return [];
+        }
 
         foreach ($this->responses as $response) {
             $responses[] = json_decode((string)$response->getBody(), true);
         }
+
+        Log::msg('Responses: ' . print_r($responses, 1));
 
         $addresses = [];
         foreach ($responses as $r) {
@@ -258,7 +297,7 @@ class GMaps {
         // Sort the array
         array_multisort($distance, SORT_ASC, $data);
 
-        Log::msg('SORTED: ' . print_r($data, 1) . PHP_EOL);
+        Log::msg('SORTED: ' . print_r($data, 1));
 
         return $data;
     }
