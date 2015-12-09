@@ -2,7 +2,7 @@
 
 namespace App;
 
-class GMaps {
+class DistanceMatrix {
 
     private $url;
     private $guzzle;
@@ -21,7 +21,7 @@ class GMaps {
 
     public function __construct($guzzle, Log $log)
     {
-        $this->url = 'https://maps.googleapis.com/maps/api/distancematrix/json?origins=&destinations=&mode=driving&units=imperial';
+        $this->url = 'https://maps.googleapis.com/maps/api/distancematrix/';
         $this->log = $log;
         $this->guzzle = $guzzle;
         $this->available_types = [
@@ -101,12 +101,7 @@ class GMaps {
 
     public function getURL()
     {
-        if ($this->url == null) {
-            $this->url = 'https://maps.googleapis.com/maps/api/distancematrix/' .
-                $this->getType();
-        }
-
-        return $this->url;
+        return $this->url . $this->getType() . '/';
     }
 
     public function getOrigins()
