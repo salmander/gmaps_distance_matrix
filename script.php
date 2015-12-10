@@ -15,7 +15,9 @@ Log::msg('Script Started');
 $customers = DB\Customer::where('postcode', '!=', '')
     ->whereRaw('(depot IS NULL OR depot = 0)')
     ->where('no_results', 0)
-    ->limit(1000)
+    ->groupBy('postcode')
+    ->orderBy('id')
+    ->limit(100)
     ->get();
 
 if ($customers) {
@@ -27,6 +29,12 @@ if ($customers) {
         // Get the latitude/longitude from Google Maps Geocode API for this customer
         $geocode = new App\Geocode(new GuzzleHttp\Client, new Log);
 
+        /**
+        * Build a query to update all the customer with the same postcode
+        * Because, 1 postcode can be used for many customers
+        */
+        $customers_to_update = DB\Customer::where('postcode', $customer->postcode);
+
         // Make API request
         Log::msg('Making API request for postcode: "'.$customer->postcode.'"');
         $geocode->makeRequest($customer->postcode);
@@ -36,11 +44,13 @@ if ($customers) {
 
         // Proceed only if the customer_address is true
         if ($customer_address) {
-            // Update customer info in the database
-            Log::msg('Updating customer latitude/longitude now.');
-            $customer->latitude = $customer_address['latitude'];
-            $customer->longitude = $customer_address['longitude'];
-            $customer->save();
+            // Update Lat/Long for all the customers where postcode = $customer->postcode
+            Log::msg('Updating all customers latitude/longitude where postcode: ' . $customer->postcode);
+
+            $customers_to_update->update([
+                'latitude' => $customer_address['latitude'],
+                'longitude' => $customer_address['longitude'],
+            ]);
 
             // Get the customer distance to all depots
             $distances = [];
@@ -71,21 +81,30 @@ if ($customers) {
             if ($distances && isset($distances[0])) {
                 Log::msg('Closest three depots to the customer are: ' . print_r(array_slice($distances, 0, 3), 1));
 
-                Log::msg('Updating customer depot to "' . $distances[0]['depot_id'] . '"');
-                $customer->depot = $distances[0]['depot_id'];
-                $customer->depot_distance = $distances[0]['distance_meters'];
-                $customer->save();
+                // Update depot and depot distance for all the customers with the postcode
+                Log::msg('Updating customers depot to "' . $distances[0]['depot_id'] . '"');
+                $customers_to_update->update([
+                    'depot' => $distances[0]['depot_id'],
+                    'depot_distance' => $distances[0]['distance_meters'],
+                    'no_results' => 0,
+                ]);
+
             } else {
                 Log::msg('Invalid $distances array: ' . print_r($distances, 1));
             }
         } else {
             Log::msg('No latitude/longitude information found for postcode: ' . $customer->postcode);
-            $customer->no_results = 1;
-            $customer->save();
+
+            // Update no_results flag for all the customers with this postcode.
+            Log::msg('Updating `no_results` for all the customers with this postcode.');
+            $customers_to_update->update([
+                'no_results' => 1,
+            ]);
+
         }
 
         Log::msg('Continue to the next customer ...', true, 1);
-        sleep(0.5);
+        sleep(1);
     }
 }
 
