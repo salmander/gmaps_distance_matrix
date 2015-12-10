@@ -52,7 +52,7 @@ class Geocode extends GoogleMaps implements GoogleMapsApi {
     {
         $body = $this->getResponseBodyAsArray();
 
-        if (count($body) > 0) {
+        if (isset($body[0]['results']) && count($body[0]['results']) > 0) {
             $address = [
                 'formatted_address' => $body[0]['results'][0]['formatted_address'],
                 'latitude' => $body[0]['results'][0]['geometry']['location']['lat'],

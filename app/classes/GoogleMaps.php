@@ -20,11 +20,14 @@ class GoogleMaps {
         $this->url = 'https://maps.googleapis.com/maps/api/';
         $this->log = $log;
         $this->guzzle = $guzzle;
+
+        // Array of the two available response types
         $this->available_types = [
             'json',
             'xml',
         ];
 
+        // Array of the two available unit types.
         $this->available_units = [
             'imperial',
             'metric',
@@ -147,10 +150,15 @@ class GoogleMaps {
     {
         $this->log->msg('Validating response...');
         if ($response_obj = json_decode((string)$response->getBody(), true)) {
-            if (isset($response_obj['status']) && $response_obj['status'] == 'OK') {
-                $this->log->msg('Valid response.');
-                return true;
+            if (isset($response_obj['status'])) {
+                if($response_obj['status'] == 'OK') {
+                    $this->log->msg('Valid response.');
+                    return true;
 
+                } else if ($response_obj['status'] == 'ZERO_RESULTS') {
+                    $this->log->msg('Zero results.');
+                    return true;
+                }
             }
         }
 
@@ -181,7 +189,7 @@ class GoogleMaps {
 
         $this->log->msg('Nothing in responses array.');
 
-        trigger_error('No valid responses', E_USER_ERROR);
+        trigger_error('No valid responses');
 
         return false;
     }
