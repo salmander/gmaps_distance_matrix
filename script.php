@@ -17,7 +17,7 @@ $customers = DB\Customer::where('postcode', '!=', '')
     ->where('no_results', 0)
     ->groupBy('postcode')
     ->orderBy('id')
-    ->limit(100)
+    ->limit(10000)
     ->get();
 
 if ($customers) {
